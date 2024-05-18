@@ -1,43 +1,30 @@
 "use client";
 import React from "react";
 import { useState } from "react";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
+import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import Editor from "@monaco-editor/react";
-import { set, useForm } from "react-hook-form";
-
 
 export default function Home() {
-  const [lang, setLang] = useState("python");
-  const [code, setCode] = useState('print("Hello world!")');
-  const [score, setScore] = useState(0);
-  const form = useForm();
-  function onSubmit(data: any) {
-    setCode(data.code);
-    setScore(100);
-  }
+  const [lang, setLang] = useState("cpp");
+  const [code, setCode] = useState("// Your code will be displayed here.");
+  const [output, setOutput] = useState("// Optimised code will be displayed here.");
+  const [score, setScore] = useState({complexity: 0, readability: 0, optimisation: 0});
+
+  const handleSubmit = async (event: any) => {
+    event.preventDefault();
+    const codeText = event.target.querySelector(".monaco-scrollable-element").textContent;
+    setOutput(codeText);
+  };
 
   return (
-    <main className="flex flex-col px-10 bg-slate-950 min-h-screen">
+    <main className="flex flex-col px-10 bg-slate-950">
       <Menubar className="flex justify-center items-center">
         <MenubarMenu>
           <MenubarTrigger className="text-white text-xl">
@@ -45,69 +32,69 @@ export default function Home() {
           </MenubarTrigger>
         </MenubarMenu>
       </Menubar>
-      <div className="flex flex-row justify-center gap-32 py-9">
-        <Editor
-          theme="vs-dark"
-          height="83vh"
-          width="61vw"
-          language={lang}
-          value={code}
-        />
-        {score === 0 ? (
-        <div className="flex flex-col justify-center w-80 gap-10">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="text-white" variant="outline">
-                Select language
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuItem onClick={() => setLang("cpp")}>
-                C++
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLang("java")}>
-                Java
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLang("python")}>
-                Python
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLang("javascript")}>
-                Javascript
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
-          <Form {...form}>
-            <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="w-full space-y-16"
-            >
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Your Code:</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Paste Your Code Here"
-                        className="resize-none text-white h-36"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">Submit</Button>
-            </form>
-          </Form>
-        </div> ) : (
-        <div className="flex flex-col justify-center items-center mt-32 w-44 h-44 border-4 border-white rounded-full">
-          <h1 className="text-white">Score:</h1>
-          <h1 className="text-white text-4xl">{score}</h1>
+      <div className="flex flex-row mt-12 mb-5">
+        <form action="#" onSubmit={handleSubmit}>
+          <div className="flex flex-col items-start justify-start w-[700px]">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="text-white w-full" variant="outline">
+                  Select language
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-44">
+                <DropdownMenuItem onClick={() => setLang("cpp")}>
+                  C++
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLang("java")}>
+                  Java
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLang("python")}>
+                  Python
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLang("javascript")}>
+                  Javascript
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Editor
+              theme="vs-dark"
+              height="600px"
+              language={lang}
+              value={code}
+            />
+            <Button type="submit" className="w-full">
+              Submit
+            </Button>
+          </div>
+        </form>
+
+        <div className="flex flex-col justify-center items-center ml-6">
+          <h1 className="pb-4 text-white">Analytics:</h1>
+          <div className="flex flex-row justify-center items-center gap-10 mb-11">
+            <div className="flex flex-col justify-center items-center w-[121px] h-[121px] border-[3px] border-white rounded-full">
+              <h1 className="text-white text-base">Complexity:</h1>
+              <h1 className="text-white text-[33px]">{score.complexity}/10</h1>
+            </div>
+            <div className="flex flex-col justify-center items-center w-[121px] h-[121px] border-[3px] border-white rounded-full">
+              <h1 className="text-white text-base">Readability:</h1>
+              <h1 className="text-white text-[33px]">{score.readability}/10</h1>
+            </div>
+            <div className="flex flex-col justify-center items-center w-[121px] h-[121px] border-[3px] border-white rounded-full">
+              <h1 className="text-white text-base">Optimisation:</h1>
+              <h1 className="text-white text-[33px]">{score.optimisation}/10</h1>
+            </div>
+          </div>
+          <h1 className="pb-4 text-white">Optimised Code:</h1>
+          <Editor
+            theme="vs-dark"
+            height="550px"
+            width="700px"
+            language={lang}
+            value={output}
+          />
         </div>
-        )}
       </div>
     </main>
   );
