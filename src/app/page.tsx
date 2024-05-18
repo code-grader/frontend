@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 import {
   DropdownMenu,
@@ -15,12 +15,52 @@ export default function Home() {
   const [lang, setLang] = useState("cpp");
   const [code, setCode] = useState("// Your code will be displayed here.");
   const [output, setOutput] = useState("// Optimised code will be displayed here.");
-  const [score, setScore] = useState({complexity: 0, readability: 0, optimisation: 0});
+  const [score, setScore] = useState({complexity: 0, readability: 0, optimization: 0});
+  const [ws, setWs] = useState<WebSocket>();
 
-  const handleSubmit = async (event: any) => {
+  useEffect(() => {
+    const websocket = new WebSocket('http://localhost:8000/ws/code');
+    setWs(websocket);
+
+    websocket.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+
+    websocket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'code_suggestion') {
+        setOutput((prev) => prev + message.data);
+      } else if (message.type === 'analysis_result') {
+        setScore({complexity: message.data.complexity, readability: message.data.readability, optimization: message.data.optimization});
+      }
+    };
+
+    websocket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    websocket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    // Cleanup function
+    return () => {
+      websocket.close();
+    };
+  }, []);
+
+  const sendCodeSnippet = (codeText: any) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'code_submit', code: codeText }));
+    }
+  };
+
+  const handleSubmit = (event: any) => {
     event.preventDefault();
     const codeText = event.target.querySelector(".monaco-scrollable-element").textContent;
-    setOutput(codeText);
+    setOutput("");
+    setScore({complexity: 0, readability: 0, optimization: 0});
+    sendCodeSnippet(codeText);
   };
 
   return (
@@ -60,7 +100,7 @@ export default function Home() {
 
             <Editor
               theme="vs-dark"
-              height="600px"
+              height="650px"
               language={lang}
               value={code}
             />
@@ -83,13 +123,13 @@ export default function Home() {
             </div>
             <div className="flex flex-col justify-center items-center w-[121px] h-[121px] border-[3px] border-white rounded-full">
               <h1 className="text-white text-base">Optimisation:</h1>
-              <h1 className="text-white text-[33px]">{score.optimisation}/10</h1>
+              <h1 className="text-white text-[33px]">{score.optimization}/10</h1>
             </div>
           </div>
           <h1 className="pb-4 text-white">Optimised Code:</h1>
           <Editor
             theme="vs-dark"
-            height="550px"
+            height="500px"
             width="700px"
             language={lang}
             value={output}
