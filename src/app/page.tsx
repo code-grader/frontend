@@ -15,7 +15,7 @@ export default function Home() {
   const [lang, setLang] = useState("cpp");
   const [code, setCode] = useState("// Your code will be displayed here.");
   const [output, setOutput] = useState("// Optimised code will be displayed here.");
-  const [score, setScore] = useState({complexity: 0, readability: 0, optimization: 0});
+  const [score, setScore] = useState({complexity: 0, readability: 0, optimisation: 0});
   const [ws, setWs] = useState<WebSocket>();
 
   useEffect(() => {
@@ -29,9 +29,11 @@ export default function Home() {
     websocket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type === 'code_suggestion') {
-        setOutput((prev) => prev + message.data);
+        const suggestion = JSON.parse(message.data);
+        setOutput((prev) => prev + suggestion.code);
       } else if (message.type === 'analysis_result') {
-        setScore({complexity: message.data.complexity, readability: message.data.readability, optimization: message.data.optimization});
+        const result = JSON.parse(message.data);
+        setScore({complexity: result.complexity, readability: result.readability, optimisation: result.optimisation});
       }
     };
 
@@ -59,7 +61,7 @@ export default function Home() {
     event.preventDefault();
     const codeText = event.target.querySelector(".monaco-scrollable-element").textContent;
     setOutput("");
-    setScore({complexity: 0, readability: 0, optimization: 0});
+    setScore({complexity: 0, readability: 0, optimisation: 0});
     sendCodeSnippet(codeText);
   };
 
@@ -123,7 +125,7 @@ export default function Home() {
             </div>
             <div className="flex flex-col justify-center items-center w-[121px] h-[121px] border-[3px] border-white rounded-full">
               <h1 className="text-white text-base">Optimisation:</h1>
-              <h1 className="text-white text-[33px]">{score.optimization}/10</h1>
+              <h1 className="text-white text-[33px]">{score.optimisation}/10</h1>
             </div>
           </div>
           <h1 className="pb-4 text-white">Optimised Code:</h1>
